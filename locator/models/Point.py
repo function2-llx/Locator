@@ -5,13 +5,24 @@ class Point:
 		self.x = x
 		self.y = y
 
-	# return a random point in rectangle(r, c)
-	def rand(r, c):
-		return Point(randint(0, r - 1), randint(0, c - 1))
+	def __add__(self, p):
+		return Point(self.x + p.x, self.y + p.y)
 
-	def range(self, r, c):
-		return 0 <= self.x and self.x < r and \
-		       0 <= self.y and self.y < c
+	def __lt__(self, value):
+		if self.x == value.x:
+			return self.y < value.y
+
+		return self.x < value.x
+
+	# return a random point in rectangle with righttop of p
+	@staticmethod
+	def rand(p):
+		return Point(randint(0, p.x - 1), randint(0, p.y - 1))
+
+	# return if current point is in the rectangle p
+	def range(self, p):
+		return 0 <= self.x and self.x < p.x and \
+		       0 <= self.y and self.y < p.y
 
 	def __repr__(self):
 		return '<Point>: (%d, %d)' % (self.x, self.y)

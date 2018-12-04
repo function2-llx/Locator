@@ -9,10 +9,13 @@ class Point:
 		return Point(self.x + p.x, self.y + p.y)
 
 	def __lt__(self, value):
-		if self.x == value.x:
-			return self.y < value.y
+		return self.pointTuple() < value.pointTuple()
 
-		return self.x < value.x
+	def pointTuple(self):
+		return (self.x, self.y)
+
+	def __repr__(self):
+		return '<Point>: (%d, %d)' % (self.x, self.y)
 
 	# return a random point in rectangle with righttop of p
 	@staticmethod
@@ -24,5 +27,3 @@ class Point:
 		return 0 <= self.x and self.x < p.x and \
 		       0 <= self.y and self.y < p.y
 
-	def __repr__(self):
-		return '<Point>: (%d, %d)' % (self.x, self.y)

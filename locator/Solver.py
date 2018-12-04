@@ -52,6 +52,9 @@ class Solver:
     def _neighborSigma(self, p):
         return sigma(self.getNeighborGaryScale(p))
 
+    def _contains(self, p):
+        return p.range(self.p)
+
     # return the point with lowest 
     def chooseLowestSigma(self, n):
         ret = copy(n[0])
@@ -80,18 +83,26 @@ class Solver:
         p = self._getSomeCenter()
         queue = Queue()
         pointSet = set()
-        pointSet.add(p)
+        pointSet.add(p.pointTuple())
         queue.put(p)
         d = 20
         mx, my = (d, 0, -d, 0), (0, d, 0, -d)
+        ret = [p]
         while not queue.empty():
             u = queue.get()
-            print(u)
+            if self._neighborSigma(u) > 20:
+                print(u)
             for x, y in zip(mx, my):
                 v = u + Point(x, y)
+                if not self._contains(v):
+                    continue
                 v = self._adjust(v)
-                if not v in pointSet:
-                    pointSet.add(v)
+
+                if len(self._getNeighbor(v, 5)) < self.getNeighborArea():
+                    continue
+                if not v.pointTuple() in pointSet:
+                    pointSet.add(v.pointTuple())
+                    ret.append(v)
                     queue.put(v)
 
-        return pointSet
+        return ret

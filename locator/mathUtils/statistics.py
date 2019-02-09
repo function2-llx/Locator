@@ -20,3 +20,6 @@ def sigma(l):
 		ret += sqr(x - a)
 
 	return sqrt(ret / len(l))
+
+def max_min(v):
+	return max(v) - min(v)

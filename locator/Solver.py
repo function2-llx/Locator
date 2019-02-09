@@ -1,12 +1,15 @@
 from PIL import Image
-from .models.Point import Point
-from .mathUtils.statistics import sigma, average
-from .mathUtils.basic import sqr
+from locator.models.Point import Point
+from locator.mathUtils.statistics import sigma, average
+from locator.mathUtils.basic import sqr
 from copy import copy
 from queue import Queue
 
+gridWidth = 16
+gridDis = 30
+
 class Solver:
-    _neighborSize = 5
+    _neighborSize = gridWidth >> 1
 
     @classmethod
     def setNeighborSize(cls, d: int):
@@ -66,7 +69,7 @@ class Solver:
 
         return ret		
 
-    _adjustSize = 3
+    _adjustSize = 2
 
     # return a point that is closer to a center in the neighbor of p
     def _adjust(self, p):
@@ -76,7 +79,7 @@ class Solver:
     def _getSomeCenter(self):
         r, c = self.p.x >> 1, self.p.y >> 1
         pos = Point(r, c)
-        n = self._getNeighbor(pos, 10)
+        n = self._getNeighbor(pos, gridDis >> 1)
         return self.chooseLowestSigma(n)
 
     def getAllCell(self):
@@ -85,24 +88,34 @@ class Solver:
         pointSet = set()
         pointSet.add(p.pointTuple())
         queue.put(p)
-        d = 20
+        d = gridDis
         mx, my = (d, 0, -d, 0), (0, d, 0, -d)
-        ret = [p]
+        centers = [p]
+
         while not queue.empty():
             u = queue.get()
-            if self._neighborSigma(u) > 20:
-                print(u)
+            print(u, self._neighborSigma(u))
             for x, y in zip(mx, my):
                 v = u + Point(x, y)
                 if not self._contains(v):
                     continue
                 v = self._adjust(v)
 
-                if len(self._getNeighbor(v, 5)) < self.getNeighborArea():
+                if len(self._getNeighbor(v, self._neighborSize)) < self.getNeighborArea():
                     continue
+
                 if not v.pointTuple() in pointSet:
                     pointSet.add(v.pointTuple())
-                    ret.append(v)
+                    centers.append(v)
                     queue.put(v)
 
-        return ret
+        minVal = self._neighborSigma(min(centers, key=lambda p: self._neighborSigma(p)))
+        maxVal = self._neighborSigma(max(centers, key=lambda p: self._neighborSigma(p)))
+        
+        piv = (minVal + maxVal) / 2
+
+        print('potential positions:')
+
+        for x in centers:
+            if self._neighborSigma(x) > piv:
+                print(x)

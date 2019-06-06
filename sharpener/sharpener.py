@@ -10,7 +10,7 @@ class Sharpener:
 
     def get_sharpen(self, src):
         img = cv2.imread(src, 0)
-        kernel = self.__get_sharpen_kernel() 
+        kernel = self.__get_sharpen_kernel()
         dst = cv2.filter2D(img, -1, kernel=kernel)
         return dst
 

@@ -119,3 +119,5 @@ class Solver:
         for x in centers:
             if self._neighborSigma(x) > piv:
                 print(x)
+
+        self.image.show()

@@ -92,9 +92,12 @@ class Solver:
         mx, my = (d, 0, -d, 0), (0, d, 0, -d)
         centers = [p]
 
+        cnt = 0
+
         while not queue.empty():
+            cnt = cnt + 1
             u = queue.get()
-            print(u, self._neighborSigma(u))
+            print(u, self._neighborSigma(u), cnt)
             for x, y in zip(mx, my):
                 v = u + Point(x, y)
                 if not self._contains(v):

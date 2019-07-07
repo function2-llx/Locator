@@ -15,4 +15,8 @@ class Sharpener:
         return dst
 
     def sharpen(self, src):
-        cv2.imwrite(src, self.get_sharpen(src))
+        import re
+        pattern = re.compile('(.*)\.(.*)')
+        pre = pattern.match(src)[1] + '-sharpen'
+        suf = pattern.match(src)[2]
+        cv2.imwrite('%s.%s' % (pre, suf), self.get_sharpen(src))

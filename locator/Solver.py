@@ -1,35 +1,50 @@
-from PIL import Image
+from PIL import Image, ImageDraw
 from locator.models.Point import Point
 from locator.mathUtils.statistics import sigma, average
 from locator.mathUtils.basic import sqr
 from copy import copy
 from queue import Queue
+import numpy as np
+from math import sqrt
 
-gridWidth = 16
-gridDis = 25
+gridWidth = 14
+gridDis = 20
+
+# nbr = neighbor
+# gs = gray scale
 
 class Solver:
-    _neighborSize = gridWidth >> 1
+    nbr_size = 5
 
     @classmethod
     def setNeighborSize(cls, d: int):
-        cls._neighborSize = d
+        cls.nbr_size = d
     
     @classmethod
     def getNeighborSize(cls, d: int):
-        return cls._neighborSize
+        return cls.nbr_size
 
     @classmethod
     def getNeighborArea(cls):
-        return sqr(2 * cls._neighborSize + 1)
+        return sqr(2 * cls.nbr_size + 1)
 
     def __init__(self, imagePath):
         self.image = Image.open(imagePath).convert('L')
         self.pix = self.image.load()
         x, y = self.image.size
         self.p = Point(x, y)
+        # self.neigobor_sigma = np.array([[np.var(self.get_nbr_gs(Point(i, j))) for j in range(y)] for i in range(x)])
+        tmp = []
+        for i in range(x):
+            print(i)
+            tmp.append([sqrt(np.var(self.get_nbr_gs(Point(i, j)))) for j in range(y)])
 
-    def _getNeighbor(self, p, d):
+        self.sigma = np.array(tmp)
+        self.adjust_size = 2
+
+        print("sigma initialized")
+
+    def get_neighbor(self, p, d):
         n = []
         for i in range(-d, d + 1):
             for j in range(-d, d + 1):
@@ -38,10 +53,9 @@ class Solver:
                     n.append(p + Point(i, j))
 
         return n
-
     
-    def getNeighborGaryScale(self, p):
-        n = self._getNeighbor(p, self._neighborSize)
+    def get_nbr_gs(self, p):
+        n = self.get_neighbor(p, self.nbr_size)
         v = [0] * (self.getNeighborArea() - len(n))
         for x in n:
             assert x.range(self.p)
@@ -49,11 +63,12 @@ class Solver:
 
         return v		
 
-    def _neighborAverage(self, p):
-        return average(self.getNeighborGaryScale(p))
+    # def _neighborAverage(self, p):
+    #     return average(self.get_nbr_gs(p))
 
     def _neighborSigma(self, p):
-        return sigma(self.getNeighborGaryScale(p))
+        # return sigma(self.get_nbr_gs(p))
+        return self.sigma[p.x, p.y]
 
     def _contains(self, p):
         return p.range(self.p)
@@ -67,19 +82,26 @@ class Solver:
             if cur < val:
                 ret, val = x, cur
 
-        return ret		
+        return ret
 
-    _adjustSize = 2
 
     # return a point that is closer to a center in the neighbor of p
     def _adjust(self, p):
-        n = self._getNeighbor(p, self._adjustSize)
-        return self.chooseLowestSigma(n)
+        # n = self.get_neighbor(p, self.adjust_size)
+        # return self.chooseLowestSigma(n)
+        print('ajust')
+        while True:
+            q = self.chooseLowestSigma(self.get_neighbor(p, self.adjust_size))
+            if p == q: return p
+            print(p, q)
+            p = q
+        # while p != self.chooseLowestSigma(self.get_neighbor(p, self.adjust_size)):
+
 
     def _getSomeCenter(self):
         r, c = self.p.x >> 1, self.p.y >> 1
         pos = Point(r, c)
-        n = self._getNeighbor(pos, gridDis >> 1)
+        n = self.get_neighbor(pos, gridDis >> 1)
         return self.chooseLowestSigma(n)
 
     def getAllCell(self):
@@ -91,7 +113,7 @@ class Solver:
         d = gridDis
         mx, my = (d, 0, -d, 0), (0, d, 0, -d)
         centers = [p]
-
+        
         cnt = 0
 
         while not queue.empty():
@@ -104,7 +126,7 @@ class Solver:
                     continue
                 v = self._adjust(v)
 
-                if len(self._getNeighbor(v, self._neighborSize)) < self.getNeighborArea():
+                if len(self.get_neighbor(v, self.nbr_size)) < self.getNeighborArea():
                     continue
 
                 if not v.pointTuple() in pointSet:
@@ -119,8 +141,18 @@ class Solver:
 
         print('potential positions:')
 
+        draw = ImageDraw.Draw(self.image)
+
         for x in centers:
             if self._neighborSigma(x) > piv:
                 print(x)
+                draw.rectangle([x.x - 3, x.y - 3, x.x + 3, x.y + 3])
 
-        self.image.show()
+        
+        # for i in range(30):
+        #     for j in range(30):
+        #         self.pix[i, j] = 0
+
+        
+
+        self.image.save('test.jpg', quality=95)

@@ -8,6 +8,9 @@ class Point:
 	def __add__(self, p):
 		return Point(self.x + p.x, self.y + p.y)
 
+	def __eq__(self, p):
+		return self.x == p.x and self.y == p.y
+
 	def __lt__(self, value):
 		return self.pointTuple() < value.pointTuple()
 

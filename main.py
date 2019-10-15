@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
 	# sharpener = Sharpener()
 	# sharpener.sharpen(image_path)
-    for i in [1]:
+    for i in [2]:
         image_path = 'examples/concentration{}.tif'.format(i)
         solver = Solver(image_path)
         solver.getAllCell()

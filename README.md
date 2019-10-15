@@ -1,4 +1,14 @@
 
 # Locator
 
-- a(n) (atypical) python project for locating unusual cell in grid
+## 简介
+
+一个用于识别特定网格图异常点的 python 程序。
+
+## 实现说明
+
+实现算法主要基于这样的思想：对于每个像素点，计算出其领域内所有点灰度值的方差。藉此，可以轻易地得到：
+
+- 网格的具体位置
+- 有异常的网格位置
+

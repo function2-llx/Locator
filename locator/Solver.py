@@ -6,7 +6,7 @@ from copy import copy
 from queue import Queue
 
 gridWidth = 16
-gridDis = 30
+gridDis = 25
 
 class Solver:
     _neighborSize = gridWidth >> 1
